@@ -13,23 +13,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.11'
-
-      - name: Install dependencies
+      - name: Build Docker image
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip python3-venv
-          python -m venv venv
-          source venv/bin/activate
-          pip install --upgrade pip
-          pip install autopep8
-    
+          docker build -t social-analyzer .
+
       - name: Run autopep8
         run: |
-          autopep8 --in-place --aggressive --aggressive $(find . -name "*.py")
+          docker run --rm social-analyzer autopep8 --in-place --aggressive --aggressive $(find . -name "*.py")
 
       - name: Commit changes
         run: |
