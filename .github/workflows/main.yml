@@ -1,26 +1,37 @@
-name: publish 
-on: [push]
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+
 jobs:
   publish:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: install requirements
-        run: sudo apt-get install curl
-      - name: build and run
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.13.2'
+
+      - name: Install dependencies
         run: |
-          curl https://raw.githubusercontent.com/qeeqbox/global-scripts/main/auto-checking.sh > auto-checking.sh
-          chmod +x auto-checking.sh
-          ./auto-checking.sh social-analyzer
-      - name: commit changes
-        if: success()
+          pip install autopep8
+
+      - name: Run autopep8
         run: |
-          git config user.name "qb-auto"
-          git config user.email "qbactions@gmail.com"
-          git add -- . :!auto-checking.sh
-          git commit -m "🤖"
+          autopep8 --in-place --aggressive --aggressive .
+
+      - name: Commit changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add .
+          git commit -m "🤖 Auto-format code with autopep8"
           git push
-      - name: delete auto-checking.sh
-        if: always()
-        run: |
-          [ -e auto-checking.sh ] && rm -- auto-checking.sh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
